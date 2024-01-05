@@ -50,7 +50,7 @@ def main():
             wii = cwiid.Wiimote() 
           except RuntimeError: 
             print("Cannot connect to your Wiimote. Make sure you are holding buttons 1 + 2!")
-            time.sleep(0.5)
+            time.sleep(1)
 
 
 
