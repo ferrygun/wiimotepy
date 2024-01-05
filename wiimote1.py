@@ -1,6 +1,7 @@
 import cwiid
 import time
 import requests
+import os
 
 # Replace these with your Home Assistant details
 url = 'http://192.168.50.88:8123/api/services/light/toggle'
@@ -20,29 +21,20 @@ data = {
 
 button_delay = 0.5
 
+def reboot_raspberry_pi():
+    try:
+        os.system("sudo reboot now")
+    except Exception as e:
+        print(f"Error: {e}")
+
 def handle_event(mesg_list, time):
     print('** Disconnected **')
-    main()
+    reboot_raspberry_pi()
 
 
 def main():
     while True:
         print('Please press buttons 1 + 2 on your Wiimote now ...')
-
-        # Keep trying to connect to the Wiimote until successful
-        '''
-        while True:
-            try:
-                wii = cwiid.Wiimote()
-                break
-            except RuntimeError:
-                print("Cannot connect to your Wiimote. Make sure you are holding buttons 1 + 2!")
-                time.sleep(1)
-            except cwiid.BluetoothError:
-                print("Cannot connect to your Wiimote. Make sure you are holding buttons 1 + 2!")
-                time.sleep(1)
-        '''
-
 
         wii = None 
         while not wii: 
@@ -50,7 +42,7 @@ def main():
             wii = cwiid.Wiimote() 
           except RuntimeError: 
             print("Cannot connect to your Wiimote. Make sure you are holding buttons 1 + 2!")
-            time.sleep(1)
+            time.sleep(0.5)
 
 
 
@@ -76,8 +68,7 @@ def main():
                     wii.rumble = 1
                     time.sleep(1)
                     wii.rumble = 0
-                    # Disconnect from the broker
-                    client.disconnect()
+
                     wii.close()
                     break
                     #exit(wii)
@@ -109,10 +100,6 @@ def main():
 
                 if (buttons & cwiid.BTN_A):
                     print('Button A pressed')
-                    time.sleep(button_delay)
-
-                if (buttons & cwiid.BTN_B):
-                    print('Button B pressed')
                     response = requests.post(url, headers=headers, json=data)
 
                     # Check the response
@@ -120,7 +107,11 @@ def main():
                         print('Request successful')
                     else:
                         print(f'Request failed with status code {response.status_code}: {response.text}')
-    
+
+                    time.sleep(button_delay)
+
+                if (buttons & cwiid.BTN_B):
+                    print('Button B pressed')
                     time.sleep(button_delay)
 
                 if (buttons & cwiid.BTN_HOME):
